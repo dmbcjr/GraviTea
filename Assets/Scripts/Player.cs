@@ -9,7 +9,8 @@ public class Player : MonoBehaviour
 
     //**to be possibly used instead of editing mass 
     //ie force * jumpSpeed * deltaTime
-    public float jumpSpeed = 5f;
+
+    
 
     Rigidbody rb;
 
@@ -19,6 +20,8 @@ public class Player : MonoBehaviour
     float lerpTime = 1f;
     float currentLerpTime;
 
+    [SerializeField] float rcsThrust = 100f;
+    [SerializeField] float jumpSpeed = 5f;
 
     // Start is called before the first frame update
     void Start()
@@ -27,16 +30,32 @@ public class Player : MonoBehaviour
         m_PlayerAudioSource = GetComponent<AudioSource>();
         m_PlayerAudioSource.Play();
     }
-
+    
 
     // Update is called once per frame
     void Update()
     {
+        rb.constraints = RigidbodyConstraints.FreezeRotationX| RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
         Thrust();
         Rotate();
-        Debug.Log(m_PlayerAudioSource.pitch);
+       
     }
-
+    void OnCollisionEnter(Collision collision)
+    {
+        
+        switch (collision.collider.tag)
+        {
+            case "friendly":
+                Debug.Log("Okay");
+                break;
+            case "fuel":
+                 Debug.Log("Fuel");
+                break;
+            default:
+                Debug.Log("Dead");
+                break;
+        }
+    }
 
     private void Thrust()
     {
@@ -52,7 +71,7 @@ public class Player : MonoBehaviour
         float xMin = 0.5f, xMax = 1.3f;
 
         m_PlayerAudioSource.pitch = Mathf.Clamp(m_PlayerAudioSource.pitch, xMin, xMax);
-
+        m_PlayerAudioSource.volume = 0;
         
 
 
@@ -69,7 +88,7 @@ public class Player : MonoBehaviour
         {
 
            
-            rb.AddRelativeForce(Vector3.up);
+            rb.AddRelativeForce(Vector3.up * jumpSpeed);
             
 
             currentLerpTime += Time.deltaTime;
@@ -103,23 +122,37 @@ public class Player : MonoBehaviour
     }
     private void Rotate()
     {
-        rb.freezeRotation = true;
+
+            rb.freezeRotation = true;
+        
+
+        float rotationThisFrame = rcsThrust * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.A))
         {
-            transform.Rotate(Vector3.forward);
+            
+
+            transform.Rotate(Vector3.forward *rotationThisFrame);
 
            
-
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            transform.Rotate(-Vector3.forward );
+           
+
+            transform.Rotate(-Vector3.forward * rotationThisFrame );
             
         }
 
+        
+         /*
+         else
+         {
+             rb.freezeRotation = true;
+         }
+         */
 
-        rb.freezeRotation = false;
+        
     }
     
     
