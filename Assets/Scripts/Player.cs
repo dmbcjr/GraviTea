@@ -23,12 +23,21 @@ public class Player : MonoBehaviour
     [SerializeField] float rcsThrust = 100f;
     [SerializeField] float jumpSpeed = 5f;
 
+    public float playerMaxHealth = 100;
+    public float currentHealth;
+    public HealthBar healthBar;
+    public float fuelMultiplier = 2f;
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         m_PlayerAudioSource = GetComponent<AudioSource>();
         m_PlayerAudioSource.Play();
+
+        currentHealth = playerMaxHealth;
+
+        healthBar.SetMaxHealth(playerMaxHealth);
     }
     
 
@@ -38,21 +47,45 @@ public class Player : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotationX| RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
         Thrust();
         Rotate();
+        
        
     }
+
+    private void HealthStatus()
+    {
+        if (playerMaxHealth>0)
+        {
+            playerMaxHealth -= Time.deltaTime *fuelMultiplier ;
+            healthBar.SetHealth(playerMaxHealth);
+            Debug.Log("health is: " + playerMaxHealth);
+        }
+        else
+        {
+           
+            Debug.Log("you died");
+            //hide player object
+
+            //explosion at point of explosion
+
+            //you died/restart screen
+
+        }
+
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         
         switch (collision.collider.tag)
         {
             case "friendly":
-                Debug.Log("Okay");
+               // Debug.Log("Okay");
                 break;
             case "fuel":
-                 Debug.Log("Fuel");
+                playerMaxHealth += 20f;
                 break;
             default:
-                Debug.Log("Dead");
+//              Debug.Log("Dead");
                 break;
         }
     }
@@ -86,8 +119,8 @@ public class Player : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Space))
         {
+            HealthStatus();
 
-           
             rb.AddRelativeForce(Vector3.up * jumpSpeed);
             
 
@@ -123,14 +156,17 @@ public class Player : MonoBehaviour
     private void Rotate()
     {
 
-            rb.freezeRotation = true;
+            
         
 
-        float rotationThisFrame = rcsThrust * Time.deltaTime;
+        float rotationThisFrame = (Input.GetKey(KeyCode.Space)) ? rcsThrust/2 * Time.deltaTime : rcsThrust *  Time.deltaTime;
+
+
+        Debug.Log(rotationThisFrame);
 
         if (Input.GetKey(KeyCode.A))
         {
-            
+            rb.freezeRotation = true;
 
             transform.Rotate(Vector3.forward *rotationThisFrame);
 
@@ -138,7 +174,7 @@ public class Player : MonoBehaviour
         }
         else if (Input.GetKey(KeyCode.D))
         {
-           
+            rb.freezeRotation = true;
 
             transform.Rotate(-Vector3.forward * rotationThisFrame );
             
