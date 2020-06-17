@@ -16,6 +16,8 @@ public class Player : MonoBehaviour
 
     AudioSource m_PlayerAudioSource;
 
+    ParticleSystem ps;
+
     float currentPitch;
     float lerpTime = 1f;
     float currentLerpTime;
@@ -34,10 +36,12 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         m_PlayerAudioSource = GetComponent<AudioSource>();
         m_PlayerAudioSource.Play();
+        ps = GetComponent<ParticleSystem>();
 
         currentHealth = playerMaxHealth;
 
         healthBar.SetMaxHealth(playerMaxHealth);
+        LevelManager.Instance.HideEndMenu();
     }
     
 
@@ -57,20 +61,27 @@ public class Player : MonoBehaviour
         {
             playerMaxHealth -= Time.deltaTime *fuelMultiplier ;
             healthBar.SetHealth(playerMaxHealth);
-            Debug.Log("health is: " + playerMaxHealth);
+            //Debug.Log("health is: " + playerMaxHealth);
         }
         else
         {
-           
-            Debug.Log("you died");
-            //hide player object
 
-            //explosion at point of explosion
-
-            //you died/restart screen
+            playerFailed();
 
         }
 
+    }
+
+    private void playerFailed()
+    {
+        //hide player object
+        
+        //explosion at point of explosion
+        ps.Play();
+        
+
+        //you died/restart screen
+        LevelManager.Instance.ShowEndMenu();
     }
 
     void OnCollisionEnter(Collision collision)
@@ -85,7 +96,7 @@ public class Player : MonoBehaviour
                 playerMaxHealth += 20f;
                 break;
             default:
-//              Debug.Log("Dead");
+                playerFailed();
                 break;
         }
     }
@@ -162,7 +173,7 @@ public class Player : MonoBehaviour
         float rotationThisFrame = (Input.GetKey(KeyCode.Space)) ? rcsThrust/2 * Time.deltaTime : rcsThrust *  Time.deltaTime;
 
 
-        Debug.Log(rotationThisFrame);
+        //Debug.Log(rotationThisFrame);
 
         if (Input.GetKey(KeyCode.A))
         {
